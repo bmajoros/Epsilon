@@ -1,0 +1,21 @@
+
+// teststak.eps : tests out class Stack
+
+include "\\bc\\projec~2\\epsilon\\src\\stack.eps"
+
+
+main
+	{
+	object MyStack.
+
+	bind MyStack to Stack new.
+	1 upTo: 5 do: 
+		[:i |
+		MyStack push: i
+		].
+
+	6 timesDo:
+		[
+		cout << MyStack pop << ' '
+		]
+	}

@@ -1,0 +1,21 @@
+
+// teststar.eps : for testing out class StreamArray
+
+include "\\bc\\projec~2\\epsilon\\src\\streamar.eps"
+
+
+main
+	{
+	(StreamArray new << 'a' << 'e' << 'i' << 'o' << 'u'
+		do:
+		[:v|
+		cout << v << ' '
+		])
+	init << 'x' << 'y' << 'z' do: 
+		[:v|
+		cout << v << ' '
+		]
+	}
+
+
+

@@ -1,0 +1,27 @@
+
+// testgraf.eps : for testing out class Graph
+
+include "\\bc\\projec~2\\epsilon\\src\\graph.eps"
+
+
+main
+	{
+	object g.
+
+	bind g to Graph new.
+
+	1 upTo: 5 do: [:i | g addVertex: i ].
+	1 upTo: 4 do: [:i | g addEdgeFrom: i To: i+1 ].
+	g addEdgeFrom: 5 To: 1.
+
+	cout << g << '\n'.
+
+	cout << "Incident on 3:\n   " << (g edgesIncidentOn: 3) << '\n'.
+	cout << "\nneighborsOf 3:\n   " << (g neighborsOf: 3) << '\n'.
+	cout << "\nReachable from 3:\n   " << (g reachableFrom: 3) << '\n'.
+	g isConnected ifTrue: [ cout << "is connected\n" ]
+	else: [ cout << "not connected\n" ]
+	}
+
+
+

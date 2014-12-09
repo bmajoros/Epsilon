@@ -1,0 +1,42 @@
+
+// simple7.eps : tests out arrays
+
+class Alpha : Array
+	{
+	attribute MagicNumber;
+	method setMagicNumber: n;
+	method getMagicNumber;
+	}
+
+method Alpha::setMagicNumber: n
+	{
+	bind MagicNumber to n;
+	}
+
+method Alpha::getMagicNumber
+	{
+	return MagicNumber;
+	}
+
+main
+	{
+	object a;
+	bind a to new Alpha;
+	a setMagicNumber: 123;
+	a setSize: 4;
+	a at: 0 put: "zero\n";
+	a at: 1 put: "one\n";
+	a at: 2 put: "two\n";
+	a at: 3 put: "three\n";
+	0 upTo: (a getSize minus: 1) do:
+		[:i|
+		(a at: i) displayOn: consoleOut;
+		];
+	a getMagicNumber displayOn: consoleOut;
+
+	object b;
+	bind b to new Array setSize: 5;
+	b copyFrom: a;
+	0 upTo: (b getSize minus: 1) do:
+		[:i|(b at: i) displayOn: consoleOut;];
+	}

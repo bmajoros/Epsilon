@@ -1,0 +1,113 @@
+// ==============================================================
+// pair.sgt
+//
+// 12/95 Bill Majoros
+// ==============================================================
+
+
+
+
+// ******************************************
+//                class Pair
+// ******************************************
+
+// Pair encapsulates any pair of objects.  It is the base
+// class for Association.  The objects stored in a pair must
+// respond to the "equal:" message.
+
+class Pair : Root
+	{
+	attribute Key, Value.
+	class method newKey: k value: v.
+	class method new.
+	method initKey: k value: v. // constructor
+	method copyFrom: p.
+	method key.
+	method value.
+	method setKey: k.
+	method setValue: v.
+	method displayOn: aStream.
+	method equal: aPair
+	}
+
+
+
+
+// ******************************************
+//               Pair methods
+// ******************************************
+
+method Pair::newKey: k value: v
+	{
+	^super new initKey: k value: v
+	}
+
+
+method Pair::new
+	{
+	^super new initKey: nil value: nil
+	}
+
+
+method Pair::equal: aPair
+	{
+	^(Key equal: aPair key) && (Value equal: aPair value)
+	}
+
+
+
+method Pair::displayOn: aStream
+	{
+	^aStream << '(' << Key << ',' << Value << ')'
+	}
+
+
+
+method Pair::initKey: k value: v
+	{
+	bind Key to k.
+	bind Value to v
+	}
+
+
+
+method Pair::copyFrom: p
+	{
+	bind Key to p key.
+	bind Value to p value
+	}
+
+
+
+method Pair::key
+	{
+	^Key
+	}
+
+
+
+method Pair::value
+	{
+	^Value
+	}
+	
+
+
+method Pair::setKey: k
+	{
+	bind Key to k
+	}
+
+
+
+method Pair::setValue: v
+	{
+	bind Value to v
+	}
+
+
+
+
+
+
+

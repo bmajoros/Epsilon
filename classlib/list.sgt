@@ -1,0 +1,314 @@
+// =============================
+// list.eps
+//
+// Linked lists
+//
+// Bill Majoros, 12/23/95
+// =============================
+
+
+// ******************************************
+//              class LinkedList 
+// ******************************************
+
+// This is a singly-linked list.  The first element is
+// accessed in constant time, but the last element is 
+// accessed in linear time.  The number of elements
+// in the list is cached, so it can be aquired in constant
+// time.  Any type of object can be stored in a LinkedList
+// because it is a "non-intrusive" list (as Bjarne Stroustrup
+// calls it); that is, the stored objects need not be derived
+// from a special class, and a single object can be stored
+// in arbitrarily many lists simultaneously.
+
+class LinkedList : Root
+	{
+	attribute first, NumElements.
+
+	// public methods:
+	class method new.
+	method init. // constructor
+	method insert: elem.
+	method append: elem.
+	method delete: elem.
+	method deleteFirst: elem.
+	method do: aBlock.
+	method displayOn: aStream.
+	method isElement: elem.
+	method find: elem.
+	method purge.
+	method getFirst.
+	method numElements
+	}
+
+
+
+// ******************************************
+//              class LinkNode
+// ******************************************
+
+// LinkNode is an internal type used by LinkedList; you 
+// probably don't want to use it directly.
+
+class LinkNode : Root 
+	{
+	attribute element, next.
+	class method new: e.
+	class method new.
+	method getElement.
+	method setElement: e.
+	method setNext: n.
+	method getNext
+	}
+
+
+
+// ******************************************
+//              LinkNode methods
+// ******************************************
+
+method LinkNode::new: e
+	{
+	^(super new setElement: e) setNext: nil
+	}
+
+
+
+method LinkNode::new
+	{
+	^self new: nil
+	}
+
+
+
+method LinkNode::getElement
+	{
+	^element
+	}
+
+
+
+method LinkNode::setElement: e
+	{
+	bind element to e
+	}
+
+
+
+method LinkNode::setNext: n
+	{
+	bind next to n
+	}
+
+
+
+method LinkNode::getNext
+	{
+	^next
+	}
+
+
+
+// ******************************************
+//             LinkedList methods
+// ******************************************
+
+method LinkedList::getFirst
+	{
+	(first isNil) ifFalse: [^first getElement]
+	else: [^nil]
+	}
+
+
+
+
+method LinkedList::displayOn: aStream
+	{
+	aStream << "LinkedList [ ".
+	self do: [:e | aStream << e << ' ' ].
+	^aStream << ']'
+	}
+
+
+
+method LinkedList::new
+	{
+	^super new init
+	}
+
+
+
+method LinkedList::init
+	{
+	// Ctor -- must call before using LinkedList
+
+	bind NumElements to 0
+	}
+
+
+
+method LinkedList::numElements
+	{
+	^NumElements
+	}
+
+
+
+method LinkedList::purge
+	{
+	bind first to nil.
+	bind NumElements to 0
+	}
+
+
+
+method LinkedList::insert: elem
+	{
+	object new_node.
+
+	bind new_node to LinkNode new: elem.
+	new_node setNext: first.
+	bind first to new_node.
+
+	bind NumElements to NumElements + 1
+	}
+
+
+
+method LinkedList::append: elem
+	{
+	object new_node.
+	bind new_node to LinkNode new: elem.
+
+	(first isNil) ifTrue: 
+		[ bind first to new_node ]
+	else:
+		[
+		object this_node, next_node.
+		bind this_node to first.
+		bind next_node to first getNext.
+		[ next_node isNil ] whileFalse:
+			[
+			bind this_node to next_node.
+			bind next_node to next_node getNext
+			].
+		this_node setNext: new_node
+		].
+
+	bind NumElements to NumElements + 1
+	}
+
+
+
+method LinkedList::delete: elem
+	{
+	// This method removes all elements equal to elem (via the
+	// "equal:" message) from the list; but elem is not assumed
+	// to be in the list; the list might even be empty.
+
+	// ### this is really inefficient, but I was in a hurry
+
+	// First, copy all elements not equal to elem into
+	// a temporary list:
+	object temp_list.
+	bind temp_list to LinkedList new init.
+	self do:
+		[:e|
+		(e equal: elem) ifFalse:
+			[ temp_list insert: e ]
+		].
+
+	// Delete all of my elements
+	self purge.
+
+	// Now copy all of the elements in the temporary list
+	// back into this list
+	temp_list do: [:e | self insert: e ]
+	}
+
+
+
+method LinkedList::deleteFirst: elem
+	{
+	// This method deletes only the first
+	// occurrence of elem, which is not assumed
+	// to be in the list.  Uses "equal:" to
+	// find the element.
+
+	// If the list is empty, don't bother searching
+	(NumElements equal: 0) ifTrue: [^self].
+
+	// Otherwise, see if it's the first element
+	(first getElement equal: elem) ifTrue:
+		[
+		bind first to first getNext.
+		bind NumElements to NumElements-1
+		]
+
+	// Otherwise, search for it in the rest of the list
+	else:
+		[
+		object ThisNode.
+
+		bind ThisNode to first.
+		[ ThisNode getNext isNil ] whileFalse:
+			[
+			(ThisNode getNext getElement equal: elem)
+				ifTrue:
+				[
+				ThisNode setNext: (ThisNode getNext getNext).
+				bind NumElements to NumElements-1.
+				^self
+				].
+			bind ThisNode to ThisNode getNext
+			]
+		]
+	}
+
+
+
+method LinkedList::do: aBlock
+	{
+	object this_node.
+
+	bind this_node to first.
+	[this_node isNil ] whileFalse:
+		[ 
+		aBlock evaluateOn: (this_node getElement).
+		bind this_node to this_node getNext
+		]
+	}
+
+
+
+method LinkedList::isElement: elem
+	{
+	// elem must be able to respond to the equal: message
+	// in order for this method to find it!
+
+	object this_node.
+
+	self do:
+		[:e|
+		(e equal: elem) ifTrue: [ ^true ]
+		].
+	^false
+	}
+
+
+
+method LinkedList::find: elem
+	{
+	// elem must be able to respond to the equal: message
+	// in order for this method to find it!
+
+	object this_node.
+
+	self do:
+		[:e|
+		(e equal: elem) ifTrue: [ ^e ]
+		].
+	^nil
+	}
+
+

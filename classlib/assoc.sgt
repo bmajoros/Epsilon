@@ -1,0 +1,55 @@
+
+// Assoc.eps : Associations
+
+include "\\bc\\projec~2\\epsilon\\src\\pair.eps"
+
+
+
+// ******************************************
+//            class Association
+// ******************************************
+
+// An association is a pair of values representing the
+// idea that the second element of the pair is associated
+// with the first element.  Generally, we want to associate
+// at most 1 image with a given pre-image, so two Associations
+// are considered equal (for the purpose of searching) if
+// their pre-images, or "keys," are equal.  Pairs, on the
+// other hand, are only considered equal if both the "key"
+// and the "value" are equal.  To use an Association, you should
+// make sure that the objects used as keys can respond to
+// the "hashValue" and "equal:" messages.
+
+class Association : Pair
+	{
+	method equal: anAssoc.
+	method hashValue.
+	method displayOn: aStream
+	}
+
+
+
+// ******************************************
+//             Association methods
+// ******************************************
+
+method Association::displayOn: aStream
+	{
+	^aStream << '(' << Key << "->" << Value << ')'
+	}
+
+
+
+method Association::hashValue
+	{
+	^Key hashValue
+	}
+
+
+
+method Association::equal: anAssoc
+	{
+	^Key equal: anAssoc key
+	}
+
+

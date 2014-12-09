@@ -1,0 +1,389 @@
+<pre>
+// ----------------------------------------------------
+// cows.eps : The classic guessing game of Cows &amp; Bulls
+//
+// Bill Majoros.  12/31/95
+// ----------------------------------------------------
+
+include "/home/bmajoros/Epsilon/classlib/pair.eps"
+
+
+
+// ******************************************
+//              class Number
+// ******************************************
+
+// A Number is a sequence of 4 distinct digits
+
+class Number : Root
+	{
+	attribute Digits.
+
+	// public methods:
+	class method new.
+	method init. // constructor
+	method read. // read from user
+	method randomize. // fill in digits randomly (no duplicates)
+	method displayOn: aStream.
+	method equal: aNumber.
+	method contains: aDigit.
+	method at: n.
+
+	// private methods
+	method input. // read from user, without validation
+	method isValid
+	}
+
+
+
+method Number::new
+	{
+	^super new init
+	}
+
+
+
+method Number::contains: aDigit
+	{
+	0 upTo: 3 do:
+		[:i|
+		((Digits at: i) equal: aDigit) ifTrue:
+			[ ^true ]
+		].
+	^false
+	}
+
+
+method Number::at: n
+	{
+	^Digits at: n
+	}
+
+
+method Number::equal: aNumber
+	{
+	0 upTo: 3 do:
+		[:i|
+		((Digits at: i) equal: (aNumber at: i))
+			ifFalse: [ ^false ]
+		].
+	^true
+	}
+
+
+method Number::displayOn: aStream
+	{
+	0 upTo: 3 do: 
+		[:i| 
+		(Digits at: i) displayOn: aStream
+		].
+	^aStream
+	}
+
+
+method Number::input
+	{
+	// This method inputs 4 digits, but does not check whether
+	// they are all distinct
+
+	// First, read a 4-character string:
+	cout &lt;&lt; '&gt;'.
+	object str.
+	bind str to String new.
+	str readFrom: cin.
+	[str length notEqual: 4] whileTrue:
+		[
+		cout &lt;&lt; "Invalid guess.  Try again:\n&gt;".
+		cin &gt;&gt; str
+		].
+
+	// Next, convert the string characters to Integer digits:
+	object zero.
+	bind zero to '0' ascii.
+	0 upTo: 3 do:
+		[:i|
+		Digits at: i put: (str at: i) ascii - zero
+		] 
+	}
+
+
+method Number::isValid
+	{
+	// This method returns true iff all 4 digits are distinct
+
+	object Used. // array of boolean (is this digit in use?)
+	bind Used to Array new setSize: 10.
+	0 upTo: 9 do: [:i|Used at: i put: false ].
+
+	0 upTo: 3 do: 
+		[:i|
+		// Verify that this digit is between 0 and 9:
+		(Digits at: i) &lt; 0 || ((Digits at: i) &gt; 9)
+			ifTrue:	[ ^false ].
+
+		// Verify that this digit is not a duplicate:
+		(Used at: (Digits at: i)) ifTrue: [ ^false ].
+		Used at: (Digits at: i) put: true 
+		].
+	^true
+	}
+
+
+method Number::read
+	{
+	self input.
+	[ self isValid ] whileFalse: 
+		[ 
+		cout &lt;&lt; "Invalid guess.  Try again:" &lt;&lt; endl.
+		self input 
+		]
+	}
+
+
+method Number::randomize
+	{
+	// This method causes this number to assume 4 distinct
+	// random digits.  We use this routine for generating
+	// the "secret number."
+
+	object Used. // array of boolean (is this digit in use?)
+	bind Used to Array new setSize: 10.
+	0 upTo: 9 do: [:i | Used at: i put: false ].
+
+	0 upTo: 3 do: 
+		[:i |
+		object NextDigit.
+		bind NextDigit to 10 random.
+		[ Used at: NextDigit ] whileTrue:
+			[
+			bind NextDigit to NextDigit+1%10
+			].
+		Used at: NextDigit put: true.
+		Digits at: i put: NextDigit
+		]
+	}
+
+
+method Number::init
+	{
+	bind Digits to Array new setSize: 4
+	}
+
+
+
+
+// ******************************************
+//              class BullCounter
+// ******************************************
+
+// The BullCounter counts cows and bulls in a Number
+
+class BullCounter : Root
+	{
+	attribute SecretNumber.
+
+	// public methods:
+	class method new: secret_num.
+	class method new. // restricted -- don't call this
+	method init: secret_num. // constructor
+	method count: aNumber. // returns a pair (cows,bulls)
+
+	// private methods:
+	method CountBulls: guess.
+	method CountBovine: guess
+	}
+
+
+method BullCounter::new: secret_num
+	{
+	^super new init: secret_num
+	}
+
+
+method BullCounter::new
+	{
+	// restricted -- don't call this
+	self error: "Use BullCounter::new:"
+	}
+
+
+
+method BullCounter::init: secret_num
+	{
+	bind SecretNumber to secret_num
+	}
+
+
+
+method BullCounter::CountBulls: guess
+	{
+	// This method counts bulls.  A bull is a correct digit
+	// in the correct position, so we just make a single parallel
+	// pass through the arrays, matching up elements.
+
+	object bulls.
+	bind bulls to 0.
+	0 upTo: 3 do:
+		[:i |
+		((guess at: i) equal: (SecretNumber at: i))
+			ifTrue: 
+			[ bind bulls to bulls+1 ]
+		].
+	^bulls
+	}
+
+
+method BullCounter::CountBovine: guess
+	{
+	// This method counts bovine.  A bovine is any digit which
+	// occurs in the secret number, regardless of whether
+	// it is in the right position or not.  We do this by making
+	// a single sweep through the guess, checking each digit
+	// to see whether it occurs in the SecretNumber.
+
+	object bovine.
+	bind bovine to 0.
+	0 upTo: 3 do:
+		[:i |
+		(SecretNumber contains: (guess at: i))
+			ifTrue:
+			[ bind bovine to bovine+1 ]
+		].
+	^bovine
+	}
+
+
+
+method BullCounter::count: aNumber
+	{
+	object cows, bulls, bovine. // cows + bulls = bovine
+
+	bind bulls to self CountBulls: aNumber.
+	bind bovine to self CountBovine: aNumber.
+	bind cows to bovine-bulls.
+
+	^Pair newKey: cows value: bulls
+	}
+
+
+// ******************************************
+//              class Application
+// ******************************************
+
+class Application : Root
+	{
+	// public methods:
+	method run.
+
+	// private methods:
+	method play.
+	method printTitle.
+	method ReadNumDigits.
+	method DisplayResults: aPair.
+	method printDirections
+	}
+
+
+method Application::printDirections
+	{
+	cout &lt;&lt;
+	   "\nYou must try to guess the secret 4-digit number." &lt;&lt;
+	   "\nI will tell you how many cows and how many bulls" &lt;&lt;
+	   "\nyour guess contains.  A cow is a correct digit in" &lt;&lt;
+	   "\na wrong position; a bull is a correct digit in the" &lt;&lt;
+	   "\ncorrect position.  You may not use a digit more than" &lt;&lt;
+	   "\nonce in a single guess.\n\n"
+	}
+
+
+method Application::DisplayResults: aPair
+	{
+	object cows, bulls.
+	bind cows to aPair key.
+	bind bulls to aPair value.
+
+	cout &lt;&lt; " ^-----".
+
+	cout &lt;&lt; cows.
+	(cows equal: 1) ifTrue:
+		[ cout &lt;&lt; " cow, " ]
+	else:
+		[ cout &lt;&lt; " cows, " ].
+
+	cout &lt;&lt; bulls.
+	(bulls equal: 1) ifTrue:
+		[ cout &lt;&lt; " bull\n" ]
+	else:
+		[ cout &lt;&lt; " bulls\n" ]
+	}
+
+
+method Application::run
+	{
+	self printTitle.
+
+	self printDirections.
+
+	[ true ] whileTrue:
+		[
+		self play.
+	
+		cout &lt;&lt; "Play again? (Y/N) ".
+		object YesNo.
+		bind YesNo to String new.
+		cin &gt;&gt; YesNo.
+		(YesNo equal: "Y") || (YesNo equal: "y")
+			ifFalse: [ ^self ].
+		cout &lt;&lt;
+		    "\n-------------------------------------------------\n"
+		]
+	}
+
+
+method Application::play
+	{
+	object SecretNumber.
+	bind SecretNumber to Number new randomize.	
+
+	cout &lt;&lt; 
+	    "\nI have selected the secret number.  Begin guessing:\n\n".
+
+	object Guess.
+	bind Guess to Number new.
+
+	object counter, results, tries.
+	bind counter to BullCounter new: SecretNumber.
+	bind tries to 1.
+
+	Guess read.
+	[ Guess equal: SecretNumber ] whileFalse:	
+		[
+		bind results to counter count: Guess.
+		self DisplayResults: results.
+		Guess read.
+		bind tries to tries+1
+		].
+
+	cout &lt;&lt; 
+		"\nCongradulations!  You guessed the secret number in "
+		&lt;&lt; tries &lt;&lt; " tries.\n\n"
+	}
+
+
+method Application::printTitle
+	{
+	cout &lt;&lt; "\n\n                   The classic game of" 
+		&lt;&lt; "\n                 C O W S   &amp;   B U L L S\n\n" 
+	}
+
+
+// ******************************************
+//                  main
+// ******************************************
+
+main
+	{
+	Application new run
+	}
+
+</pre>

@@ -1,0 +1,75 @@
+
+// simple6.eps : for testing out 'super'
+
+
+
+// ========================================
+//				class Alpha
+// ========================================
+class Alpha
+	{
+	attribute x;
+	method g;
+	method getX;
+	method setX: toX;
+	}
+
+method Alpha::g
+	{
+	"Alpha::g\n" displayOn: consoleOut;
+	}
+
+method Alpha::getX
+	{
+	return x;
+	}
+
+method Alpha::setX: toX
+	{
+    bind x to toX;
+	}
+
+
+
+// ========================================
+//				class Beta
+// ========================================
+class Beta : Alpha
+	{
+	method f: s;
+	method g;
+	}
+
+method Beta::f: s
+	{
+	"s::x=" displayOn: consoleOut;
+	s getX displayOn: consoleOut;
+	"\nSending message g to object s in Beta::f\n" displayOn: consoleOut;
+	s g;
+	"Message-send returned in Beta::f\n" displayOn: consoleOut;
+	"Setting s::x to 4" displayOn: consoleOut;
+	s setX: 4;
+	}
+
+method Beta::g
+	{
+	"Calling Beta::f\n" displayOn: consoleOut;
+	bind x to 6;
+	self f: super;
+	"Returned from Beta::f\n" displayOn: consoleOut;
+	"x=" displayOn: consoleOut;
+	x displayOn: consoleOut;
+	consoleOut nl;
+	}
+
+
+
+// ========================================
+//				    main
+// ========================================
+main
+	{
+	object b;
+	bind b to new Beta;
+	b g;
+	}

@@ -1,0 +1,35 @@
+<h1>Meta</h1>
+
+<br><b>Derived from:</b>
+<p><b>Description:</b>
+<br>Meta is the base class for all metaclasses.  Every class (except
+for the metaclasses) has a metaclass.  When you declare a new class,
+a metaclass is automatically created for the new class.  This metaclass
+has no name, but is sometimes shown as "meta~SomeClass" in interpreter
+messages.
+
+<p>Class attributes and class methods declared for a class
+are actually instance attributes and instance methods on the
+metaclass.  The declared class is considered to be an instance
+of its metaclass, so these attributes and methods actually belong
+to the class, rather than to its instances.
+
+<p>A class' metaclass is automatically a subclass of the class'
+superclass' metaclass.  That is, if class B is derived from A, then
+meta~B is implicitly derived from meta~A.  Thus, each class that you
+declare automatically inherits the instance attributes and methods
+of Meta (as class attributes and class methods, respectively).
+
+<p>The most practical result of this fact is that classes can be
+instantiated by sending them Meta's "new" message; in fact, this is
+the only way to instantiate objects in Epsilon.
+
+<p>You cannot instantiate nor inherit from Meta, because it is a
+restricted class.
+
+<p><b>Methods:</b>
+<br>	<a href="metanew.html">new</a>
+<br>	<a href="metasupr.html">superClass</a>
+<br>	<a href="metasub.html">subClasses</a>
+<br>	<a href="metaerr.html">error:</a>
+<br>	<a href="metaname.html">name</a>

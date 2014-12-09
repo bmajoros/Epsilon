@@ -1,0 +1,11 @@
+<h2>Block::evaluate</h2>
+
+<br><b>Description:</b>
+<br>Causes block's contents to be executed.  The value of the last
+statement is returned, even if no <i>return</i> statement was
+executed.  (In fact, if a return statement executes, the block may
+cause the stack to unwind to a previous context).
+
+<p>If the block takes any parameters, they are bound to nil.
+
+<p><b>Return value:</b> Value of last statement

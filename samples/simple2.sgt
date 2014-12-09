@@ -1,0 +1,64 @@
+
+// simple2.eps
+
+class Beta
+	{
+	method executeBlock: b on: i;
+	method exec1: b on: i;
+	method exec2: b on: i;
+	method exec3: b on: i;
+	}
+
+method Beta::executeBlock: b on: i
+	{
+	object a,d,c;
+	self exec1: b on: i;
+	}
+
+method Beta::exec1: b on: i
+	{
+	object a,d,c;
+	self exec2: b on: i;
+	}
+
+method Beta::exec2: b on: i
+	{
+	object a,d,c;
+	self exec3: b on: i;
+	}
+
+method Beta::exec3: b on: i
+	{
+	object a,d,c;
+	b evaluateOn: i;
+	}
+
+main
+	{
+		[ :a :b :c |
+		a displayOn: consoleOut;
+		consoleOut nl;
+		b displayOn: consoleOut;
+		consoleOut nl;
+		c displayOn: consoleOut;
+		consoleOut nl;
+		] evaluateOn: 32 and: 64 and: 96;
+
+	object b;
+	bind b to
+		[ :a |
+		">>>" displayOn: consoleOut;
+		a displayOn: consoleOut;
+		"<<<" displayOn: consoleOut;
+		];
+	b evaluateOn: 4;
+
+	object s;
+	bind s to "Cookie Monster";
+	bind b to
+		[ :x | s displayOn: consoleOut; ];
+	new Beta executeBlock: b on: 122;
+	}
+
+
+

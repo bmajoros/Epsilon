@@ -1,0 +1,157 @@
+<pre>
+// epsilon.C
+
+#include "testcomp.H"
+#include "interpreter.H"
+#include &lt;iostream.h&gt;
+#include &lt;fstream.h&gt;
+#include &lt;strstream.h&gt;
+#include "execute.H"
+#include "cmdline.H"
+
+
+void go(const StringObject &amp;);
+
+
+void main(int argc,char *argv[])
+{
+  try
+    {
+      // Process command line and get filename of source file
+      CmdLine=new CommandLine(argc,argv);
+      char Buffer[200];
+      if(CmdLine-&gt;GetFilename())
+	strcpy(Buffer,CmdLine-&gt;GetFilename());
+      else
+	{
+	  cout &lt;&lt; "Filename: ";
+	  cin &gt;&gt; Buffer;
+	}
+
+      // Try to execute the source file
+      go(Buffer);
+    }
+  catch(const LEXICAL_ERROR &amp;le)
+    {
+      cout &lt;&lt; "Lexical error on line " &lt;&lt; le.GetEpsilonLineNum() &lt;&lt;
+	" in file \"" &lt;&lt; "\"" &lt;&lt; endl;
+    }
+  catch(const READ_ERROR &amp;)
+    {
+      cout &lt;&lt; "Read error" &lt;&lt; endl;
+    }
+  catch(const SYNTAX_ERROR &amp;se)
+    {
+      cout &lt;&lt; "Syntax error on line " &lt;&lt; se.GetEpsilonLineNum() &lt;&lt;
+	" in file \"" &lt;&lt; "\"" &lt;&lt; endl;
+      if(se.GetDetails())
+	cout &lt;&lt; se.GetDetails() &lt;&lt; endl;
+      else cout &lt;&lt; endl;
+    }
+  catch(const SEMANTIC_ERROR &amp;se)
+    {
+      cout &lt;&lt; "Semantic error on line " &lt;&lt; se.GetEpsilonLineNum() &lt;&lt;
+	" in file \"" &lt;&lt; "\"" &lt;&lt; endl;
+      if(se.GetDetails())
+	cout &lt;&lt; se.GetDetails() &lt;&lt; endl;
+      else cout &lt;&lt; endl;
+    }
+  catch(const STACK_UNDERFLOW &amp;)
+    {
+      cout &lt;&lt; "Stack underflow" &lt;&lt; endl;
+    }
+  catch(const INTERNAL_ERROR &amp;ie)
+    {
+      cout &lt;&lt; "Internal error on line " &lt;&lt; ie.GetLineNum() &lt;&lt;
+	" in " &lt;&lt; ie.GetFilename() &lt;&lt; ": " &lt;&lt; ie.GetReason() &lt;&lt; endl;
+    }
+  catch(const RUN_TIME_ERROR &amp;rte)
+    {
+      cout &lt;&lt; "Run-time error: ";
+      if(rte.GetDetails())
+	cout &lt;&lt; rte.GetDetails() &lt;&lt; endl;
+      else cout &lt;&lt; "&lt;no details available&gt;" &lt;&lt; endl;
+    }
+  catch(const EPSILON_EXCEPTION &amp;e)
+    {
+      cout &lt;&lt; "general exception caught in main()" &lt;&lt; endl;
+      if(e.GetFilename())
+	cout &lt;&lt; "file=" &lt;&lt; e.GetFilename() &lt;&lt; " line=" &lt;&lt;
+	  e.GetLineNum() &lt;&lt; endl;
+      if(e.GetReason())
+	cout &lt;&lt; " reason=" &lt;&lt; e.GetReason() &lt;&lt; endl;
+    }
+  catch(const FILE_EXCEPTION &amp;e)
+    {
+      cout &lt;&lt; "file exception caught in main()" &lt;&lt; endl;
+      if(e.GetFilename())
+	cout &lt;&lt; "file=" &lt;&lt; e.GetFilename() &lt;&lt; " line=" &lt;&lt;
+	  e.GetLineNum() &lt;&lt; endl;
+      if(e.GetReason())
+	cout &lt;&lt; "reason=" &lt;&lt; e.GetReason() &lt;&lt; endl;
+    }
+  catch(...)
+    {
+      cout &lt;&lt; "Exception caught in main()" &lt;&lt; endl;
+    }
+}
+
+
+void registerBuiltInClasses(EpsilonInterpreter &amp;interpreter)
+{
+  // 1. Create &amp; register your classes using 
+  //       Class *c=interpreter.createClass("&lt;name&gt;");
+  //       (automatically registered)
+  //    or
+  //       Class *c=new DerivedFromClass(...);
+  //       (not automatically registered; you must do it)
+  //       interpreter.registerClass(c);
+
+  // 2. Add instance methods &amp; class methods to your class:
+  //       interpreter.addInstanceMethod(c,"&lt;methodName&gt;",
+  //          &amp;cPlusPlusFunction);
+  //    or
+  //       interpreter.addInstanceMethod(c,"&lt;methodName&gt;",
+  //          "&lt;epsilon source code&gt;");
+}
+
+
+void registerBuiltInObjects(EpsilonInterpreter &amp;interpreter)
+{
+  // Declare your global objects here using
+  //    int lexAddr=interpreter.declareGlobalObject("&lt;name&gt;");
+
+  // Allow the interpreter to allocate space at the bottom of
+  // the run-time-stack for all global objects
+  interpreter.allocateGlobalSpace();
+
+  // Store your global objects on the stack using
+  //     interpreter.storeGlobalObject(&lt;object&gt;,lexAddr);
+}
+
+
+
+void go(const StringObject &amp;filename)
+{
+  EpsilonInterpreter interpreter;
+
+  registerBuiltInClasses(interpreter);
+  registerBuiltInObjects(interpreter);
+
+  ifstream is(filename.AsCharArray());
+  if(!is.good())
+    throw FILE_EXCEPTION(__FILE__,__LINE__);
+
+  interpreter.parseCode(is);
+
+  if(!interpreter.doesMainExist())
+    {
+      cout &lt;&lt; "You have not defined main()!" &lt;&lt; endl;
+      return;
+    }
+
+  interpreter.executeMain();
+}
+
+
+</pre>

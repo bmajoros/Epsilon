@@ -1,0 +1,40 @@
+<h2>Meta::new</h2>
+
+<br><b>Description:</b>
+<br>Instantiates the recipient class.  Since Meta is a restricted class,
+you cannot instantiate it explicitly; Meta's instances are all
+classes.  Meta::new instantiates whichever one of these classes
+receives the <i>new</i> message.
+
+<p>You should override <i>new</i> in your classes (as a class method)
+to instantiate the class and initialize the resulting object.  This
+is usually achieved by some variant on:
+
+<p>		method MyClass::new
+<br>			{
+<br>			^super new init
+<br>			}
+
+<p>This code will invoke the <i>new</i> method of MyClass' super-class
+and send the <i>init</i> instance method (which you must define) to
+the resulting instance, before returning it.
+
+<p>Overriding <i>new</i> ensures that your
+objects are properly constructed
+before they are used.  If you simply inherit Meta::new as-is and allow
+your clients to use it directly, they may accidentally use the
+objects without initializing them, which can be disasterous.  The
+object's attributes would all be initialized to <i>nil</i>,
+but this is usually not enough.
+
+<p>Often, you will need for <i>new</i> to accept one or more
+arguments in order to properly contruct a new object.  Meta::new
+does not take any parameters, however, so the solution is to provide
+another means of instantiation; i.e., a different class method, such
+as MyClass::newSetX:SetY:.  
+<p>If you do this, you should also disable Meta::new to force your
+clients to instantiate your class with the proper class method.  You
+can disable Meta::new for your class by overriding it with a method
+that sends itself the <a href="metaerr.html">error:</a> message.
+
+<p><b>Return value:</b> An instance of the recipient class

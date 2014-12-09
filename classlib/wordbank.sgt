@@ -1,0 +1,26 @@
+// =======================================
+// wordbank.eps
+// For my sample hangman program.
+//
+// 1/19/96 BM
+// =======================================
+
+
+
+// *********************************
+//					class WordBank
+// *********************************
+class WordBank
+	{
+	attribute myFile.
+
+	class method new. // do not use this
+	class method fromFile: filename.
+	method getWord
+	}
+
+
+// *********************************
+//					WordBank methods
+// *********************************
+

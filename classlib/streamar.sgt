@@ -1,0 +1,72 @@
+
+// streamar.eps : Definition of class ArrayStream
+
+include "\\bc\\projec~2\\epsilon\\src\\elastic.eps"
+
+// ***********************************************
+//							  class StreamArray
+// ***********************************************
+
+// A StreamArray is an array that allows aggregate initialization
+// (sort of).  You can instantiate it and store a sequence of elements
+// in it all in one statement:
+//			StreamArray new << 'a' << 'e' << 'i' << 'o' << 'u'
+// You can then iterate over this array using method "do:"  This
+// class takes the place of the #(...) syntax of Smalltalk, which
+// is not supported by Epsilon.
+
+class StreamArray : ElasticArray
+	{
+	attribute numElements.
+
+	// public methods:
+	class method new.
+	class method InitialSize: is Increment: inc.
+	method init.
+	method << elem.
+	method do: aBlock
+	}
+
+
+
+// ***********************************************
+//							  class StreamArray
+// ***********************************************
+
+method StreamArray::new
+	{
+	^super new init
+	}
+
+
+
+method StreamArray::InitialSize: is Increment: inc
+	{
+	^(super InitialSize: is Increment: inc) init
+	}
+
+
+
+method StreamArray::init
+	{
+	bind numElements to 0
+	}
+
+
+
+method StreamArray::<< elem
+	{
+	self at: numElements put: elem.
+	bind numElements to numElements+1
+	}
+
+
+method StreamArray::do: aBlock
+	{
+	0 upTo: numElements-1 do: 
+		[:i|
+		aBlock evaluateOn: (self at: i)
+		]
+	}
+
+

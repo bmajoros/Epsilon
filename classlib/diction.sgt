@@ -1,0 +1,151 @@
+
+// diction.eps : Dictionary
+
+include "\\bc\\projec~2\\epsilon\\src\\set.eps"
+include "\\bc\\projec~2\\epsilon\\src\\assoc.eps"
+
+
+
+// ******************************************
+//              class Dictionary
+// ******************************************
+
+// Dictionary implements an "associative array," or what
+// mathematicians call a "relation."  A Dictionary associates
+// a single "value" object with any given "key."  An attempt to
+// set the value for a key already having a value results
+// in the key being mapped to the SECOND value; the previous
+// association is deleted.  A Dictionary can be used to transform
+// a set of pre-images to the set of their images under the
+// denoted relation.  Dictionary is based on Set, which is based
+// on HashTable, so it is pretty fast.
+
+class Dictionary : Root
+	{
+	attribute set.
+	class method new.
+	method init. // constructor
+	method at: key put: value.
+	method at: key.
+	method at: key ifAbsent: aBlock.
+	method keys.
+	method values.
+	method includesKey: key.
+	method removeKey: key.
+	method associationsDo: aBlock.
+	method transform: aSet.
+	method displayOn: aStream
+	}
+
+
+
+// ******************************************
+//              Dictionary methods
+// ******************************************
+
+method Dictionary::new
+	{
+	^super new init
+	}
+
+
+method Dictionary::init // constructor
+	{
+	bind set to Set new
+	}
+
+
+
+method Dictionary::at: key put: value
+	{
+	object a.
+	bind a to Association newKey: key value: value.
+
+	// First, remove any existing associations with the same key:
+	set remove: a.
+
+	// Then add the new association
+	set add: a
+	}
+
+
+
+method Dictionary::at: key
+	{
+	object assoc.
+	bind assoc to set find: 
+		(Association newKey: key value: nil).
+	assoc isNil ifFalse: [ ^assoc value ]
+	else: [ ^nil ]
+	}
+
+
+
+method Dictionary::at: key ifAbsent: aBlock
+	{
+	object value.
+	bind value to self at: key.
+	value isNil ifTrue: aBlock.
+	^value
+	}	
+
+
+
+method Dictionary::keys
+	{
+	object keys.
+	bind keys to Set new.
+	set do: [:a| keys add: a key ].
+	^keys
+	}
+
+
+
+method Dictionary::values
+	{
+	object values.
+	bind values to Set new.
+	set do: [:a| values add: a value ].
+	^values
+	}
+
+
+
+method Dictionary::includesKey: key
+	{
+	^(self at: key) isNil not
+	}
+
+
+
+method Dictionary::removeKey: key
+	{
+	set remove: (Association newKey: key value: nil)
+	}
+
+
+
+method Dictionary::associationsDo: aBlock
+	{
+	set do: aBlock
+	}
+
+
+
+method Dictionary::transform: aSet
+	{
+	object images.
+	bind images to Set new.
+	aSet do: [:e|images add: (self at: e)].
+	^images
+	}
+
+
+
+method Dictionary::displayOn: aStream
+	{
+	^set displayOn: aStream
+	}
+
+
+

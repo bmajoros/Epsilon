@@ -1,0 +1,93 @@
+
+// interval.eps : Interval class
+
+
+// ******************************************
+//              class Interval
+// ******************************************
+
+// Interval provides a means of encapsulating a range of
+// iteration.  Any type of object that can respond to the
+// upTo:do: message can be used (for example, Integer).
+
+class Interval : Root
+	{
+	attribute begin, end.
+	class method newBegin: b end: e.
+	class method new. // don't use this
+	method setBegin: b end: e.
+	method getBegin.
+	method getEnd.
+	method do: aBlock.
+	method displayOn: aStream.
+	method equal: anInterval
+	}
+
+
+
+
+// ******************************************
+//               Interval methods
+// ******************************************
+
+method Interval::displayOn: aStream
+	{
+	^aStream << "Interval [" << begin << ',' << end << ']'
+	}
+
+
+
+method Interval::newBegin: b end: e
+	{
+	^super new setBegin: b end: e
+	}
+
+
+
+method Interval::new
+	{
+	self error: "Use Interval::newBegin:end:"
+	}
+
+
+
+method Interval::equal: anInterval
+	{
+	^(anInterval getBegin equal: begin) &&
+		(anInterval getEnd equal: end)
+	}
+
+
+
+method Interval::setBegin: b end: e
+	{
+	bind begin to b.
+	bind end to e
+	}
+
+
+
+method Interval::getBegin
+	{
+	^begin
+	}
+
+
+
+method Interval::getEnd
+	{
+	^end
+	}
+
+
+
+method Interval::do: aBlock
+	{
+	begin upTo: end do: aBlock
+	}
+
+
+
+
+
+

@@ -1,0 +1,26 @@
+
+// testdict.eps : for testing out Dictionary
+
+include "\\bc\\projec~2\\epsilon\\src\\diction.eps"
+
+main
+	{
+	object dict.
+	bind dict to Dictionary new.
+
+	1 upTo: 6 do: [:i | dict at: i put: i*i ].
+	
+	dict at: 4 put: 0.
+	consoleOut << (dict at: 4) << '\n' << dict << '\n'.
+
+	dict removeKey: 4.
+
+	consoleOut << dict << dict keys << dict values.
+
+	dict associationsDo: 
+		[:a | consoleOut << a << ' ' ]
+	}
+
+
+
+

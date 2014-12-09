@@ -1,0 +1,22 @@
+<h2>Block evaluation methods</h2>
+
+<br><b>Block::evaluateOn: P</b>
+<br><b>Block::evaluateOn: P and: Q</b>
+<br><b>Block::evaluateOn: P and: Q and: R</b>
+
+<p><b>Description:</b>
+<br>Causes block's contents to be executed.  The value of the last
+statement is returned, even if no <i>return</i> statement was
+executed.  (In fact, if a return statement executes, the block may
+cause the stack to unwind to a previous context).
+
+<p>The block must be of sufficient arity (i.e., must have at
+least as many parameters as there are arguments).
+P, Q, and R are any objects, and
+will be bound to the block's formal parameters in a left-to-right
+fashion.  Any superfluous formal parameters are bound to nil.
+
+<p>To evaluate a block taking no parameters, see
+<a href="blkeval.html">Block::evaluate</a>.
+
+<p><b>Return value:</b> Value of last statement

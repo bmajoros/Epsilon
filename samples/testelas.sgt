@@ -1,0 +1,13 @@
+
+// testelas.eps : tests out the ElasticArray class
+
+include "\\bc\\projec~2\\epsilon\\src\\elastic.eps"
+
+main
+	{
+	object a.
+	bind a to ElasticArray new.
+
+	1 upTo: 10 do: [:i | a at: i put: i ].
+	1 upTo: 11 do: [:i | consoleOut << (a at: i) << '\n' ]
+	}

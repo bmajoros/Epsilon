@@ -1,0 +1,71 @@
+
+class Alpha
+	{
+	method SayHello;
+	method printInteger: i;
+	method printInteger: i on: aStream;
+	method printString: s;
+	}
+
+method Alpha::printString: s
+	{
+	s displayOn: consoleOut;
+	}
+
+method Alpha::printInteger: i on: aStream
+	{
+	"\nNow we are printing onto a stream parameter: "
+		displayOn: aStream;
+	i displayOn: aStream;
+	aStream nl;
+	}
+
+method Alpha::printInteger: i
+	{
+	object a;
+	bind a to 22;
+	self printInteger: i on: consoleOut;
+	self printInteger: a on: consoleOut;
+	}
+
+method Alpha::SayHello
+	{
+	object a;
+	bind a to new Alpha;
+	a printString: "Hello!";
+	consoleOut nl;
+	}
+
+main
+	{
+	"\nHello, world!\n\t\t" displayOn: consoleOut;
+
+	object four, five, two;
+
+	bind four to 4;
+	bind five to 5;
+	bind two to 2;
+
+	(((two times: four) plus: (five times: two))
+		minus: ((two plus: four) times: two)) displayOn: consoleOut;
+
+	"\n---------------------------------------------------------------"
+		displayOn: consoleOut;
+
+	"\nEnter your age: " displayOn: consoleOut;
+	object age;
+	bind age to new Integer;
+	age readFrom: consoleIn;
+
+	consoleOut nl;
+	"You are " displayOn: consoleOut;
+	age displayOn: consoleOut;
+	" years old.\n" displayOn: consoleOut;
+
+	object a;
+	bind a to new Alpha;
+	a SayHello;
+	a printInteger: 45;
+    "\n\nThat's all, folks!\n" displayOn: consoleOut;
+	}
+

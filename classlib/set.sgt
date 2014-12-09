@@ -1,0 +1,215 @@
+// ==============================================================
+// set.eps
+//
+// 12/95 Bill Majoros
+// ==============================================================
+
+include "\\bc\\projec~2\\epsilon\\src\\hash.eps"
+
+
+
+// ******************************************
+//              class Set
+// ******************************************
+
+// This is a set based on a hash table (so it is pretty
+// fast).  The objects stored in a Set must respond to
+// the following methods:
+//			equal:
+//			hashValue
+// You can add and remove elements, and compute union,
+// intersection, and set difference.  You can also iterate
+// on the elements.
+
+class Set : Root
+	{
+	attribute hash.
+
+	class method new.
+	class method newSize: s.
+	method initSize: s. // constructor
+	method add: elem.
+	method addUnconditionally: elem.
+	method do: aBlock.
+	method find: elem.
+	method isElement: elem.
+	method union: aSet.
+	method + aSet.	// union
+	method intersect: aSet.
+	method * aSet.  // intersection
+	method minus: aSet.
+	method - aSet.  // set difference
+	method displayOn: aStream.
+	method remove: elem.
+	method numElements.
+	method purge.
+	method isEmpty
+	}
+
+
+
+// ******************************************
+//              Set methods
+// ******************************************
+
+method Set::isEmpty
+	{
+	^self numElements equal: 0
+	}
+
+
+
+method Set::+ aSet
+	{
+	^self union: aSet
+	}
+
+
+
+method Set::* aSet
+	{
+	^self intersect: aSet
+	}
+
+
+
+method Set::- aSet
+	{
+	^self minus: aSet
+	}
+
+
+
+method Set::new
+	{
+	^self newSize: 41
+	}
+
+
+
+method Set::newSize: s
+	{
+	^super new initSize: s
+	}
+
+
+
+method Set::initSize: s
+	{
+	// constructor
+
+	bind hash to HashTable newSize: s
+	}
+
+
+
+method Set::remove: elem
+	{
+	hash remove: elem
+	}
+
+
+
+method Set::numElements
+	{
+	^hash numElements
+	}
+
+
+
+method Set::purge
+	{
+	hash purge
+	}
+
+
+
+method Set::displayOn: aStream
+	{
+	aStream << "{ ".
+	self do: [:e | aStream << e << ' ' ].
+	aStream << '}'.
+
+	^aStream
+	}
+
+
+
+method Set::add: elem
+	{
+	(hash isElement: elem) ifFalse: [ hash add: elem ]
+	}
+
+
+
+method Set::addUnconditionally: elem
+	{
+	hash add: elem
+	}
+
+
+
+method Set::do: aBlock
+	{
+	hash do: aBlock
+	}
+
+
+
+method Set::find: elem
+	{
+	^hash find: elem
+	}
+
+
+
+method Set::isElement: elem
+	{
+	^hash isElement: elem
+	}
+
+
+
+method Set::union: aSet
+	{
+	object RetVal.
+
+	bind RetVal to Set new.
+	self do: [:e | RetVal add: e ].
+	aSet do: [:e | RetVal add: e ].
+
+	^RetVal
+	}
+
+
+
+method Set::intersect: aSet
+	{
+	object RetVal.
+
+	bind RetVal to Set new.
+	self do: 
+		[:e|
+		(aSet isElement: e) ifTrue: [ RetVal add: e ]
+		].
+
+	^RetVal
+	}
+
+
+
+method Set::minus: aSet
+	{
+	object RetVal.
+
+	bind RetVal to Set new.
+	self do: 
+		[:e|
+		(aSet isElement: e) ifFalse: [ RetVal add: e ]
+		].
+
+	^RetVal
+	}
+
+
+

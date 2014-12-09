@@ -1,0 +1,76 @@
+// ==============================================================
+// stack.eps : An implementation of a stack
+//
+// 1/12/96 Bill Majoros
+// ==============================================================
+
+include "\\bc\\projec~2\\epsilon\\src\\list.eps"
+
+
+
+// ******************************************
+//            		class Stack
+// ******************************************
+
+class Stack
+	{
+	attribute myList.
+
+	// public methods:
+	class method new.
+	method push: anObject.
+	method pop.
+	method isEmpty.
+
+	// private methods:
+	method init
+	}
+
+
+// ******************************************
+//            	 Stack methods
+// ******************************************
+method Stack::new
+	{
+	^super new init
+	}
+
+
+
+method Stack::init
+	{
+	bind myList to LinkedList new
+	}
+
+
+
+method Stack::push: anObject
+	{
+	myList insert: anObject
+	}
+
+
+
+method Stack::pop
+	{
+	object topElement.
+
+	self isEmpty
+		ifTrue: [self error: "Attempt to pop empty stack"].
+
+	bind topElement to myList getFirst.
+	myList deleteFirst: topElement.
+
+	^topElement
+	}
+
+
+
+method Stack::isEmpty
+	{
+	^myList numElements equal: 0
+	}
+
+
+
+

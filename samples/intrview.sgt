@@ -1,0 +1,394 @@
+
+// intrview.eps : Keeps track of all my interviews
+
+
+include "\\bc\\projec~2\\epsilon\\src\\list.eps"
+
+
+
+// ********************************************
+//		   class Date
+// ********************************************
+class Date
+	{
+	attribute Month, Day, Year. // integers
+	class method new.
+	method setMonth: m day: d year: y. // constructor
+	method init. // constructor
+	method displayOn: os.
+	method readFrom: is
+	}
+
+
+method Date::new
+	{
+	^super new init
+	}
+
+
+method Date::init
+	{
+	bind Month to Integer new.
+	bind Day to Integer new.
+	bind Year to Integer new
+	}
+
+
+method Date::setMonth: m day: d year: y
+	{
+	bind Month to m.
+	bind Day to d.
+	bind Year to y
+	}
+
+
+method Date::displayOn: os
+	{
+	^os << Month << '/' << Day << '/' << Year
+	}
+
+
+method Date::readFrom: is
+	{
+	object c.
+	bind c to Char new.
+
+	^is >> Month >> c >> Day >> c >> Year >> c
+	}
+
+
+
+// ********************************************
+//		class Interview
+// ********************************************
+class Interview
+	{
+	attribute InterviewDate, CompanyName, Results.
+	class method new.
+	method setDate: d name: n results: r. // constructor
+	method init. // constructor
+	method displayOn: os.
+	method readFrom: is
+	}
+
+
+
+method Interview::new
+	{
+	^super new init
+	}
+
+
+
+
+method Interview::init
+	{
+	bind InterviewDate to Date new init.
+	bind CompanyName to String new.
+	bind Results to String new
+	}
+
+
+
+method Interview::setDate: d name: n results: r
+	{
+	bind InterviewDate to d.
+	bind CompanyName to n.
+	bind Results to r
+	}
+
+
+
+method Interview::displayOn: os
+	{
+	^os << InterviewDate << '\n'
+		<< CompanyName << '\n'
+		<< Results << '\n'
+	}
+
+
+
+method Interview::readFrom: is
+	{
+	^is >> InterviewDate >> CompanyName >> Results
+	}
+
+
+
+// ********************************************
+//		  class Menu
+// ********************************************
+class Menu
+	{
+	attribute OptionList, NumOptions.
+
+	// public methods:
+	class method new.
+	method init. // constructor
+	method AddOption: opt.
+	method ReadOption.
+
+	// private methods:
+	method PrintMenu.
+	method ReadSelection
+	}
+
+
+
+method Menu::new
+	{
+	^super new init
+	}
+
+
+
+method Menu::PrintMenu
+	{
+	object OptionNum.
+	bind OptionNum to 1.
+
+	OptionList do:
+		[:opt|
+		consoleOut << OptionNum.
+		bind OptionNum to OptionNum+1.
+		consoleOut << ") " << opt << '\n'
+		]
+	}
+
+
+
+method Menu::ReadSelection
+	{
+	object sel.
+	bind sel to Integer new.
+
+	[ true ] whileTrue:
+		[
+		consoleOut << "\n>".
+		consoleIn >> sel.
+		(sel>0) && (sel<=NumOptions) ifTrue: [ ^sel ].
+		consoleOut << "\nError -- try again:"
+		]
+	}
+
+
+
+method Menu::init
+	{
+	bind OptionList to LinkedList new.
+	bind NumOptions to 0
+	}
+
+
+
+method Menu::AddOption: opt
+	{
+	OptionList append: opt.
+	bind NumOptions to NumOptions+1
+	}
+
+
+
+method Menu::ReadOption
+	{
+	self PrintMenu.
+	object RetVal.
+	bind RetVal to self ReadSelection.
+	consoleIn >> String new. // discard '\r'
+	^RetVal
+	}
+
+
+
+// ********************************************
+//		class Application
+// ********************************************
+class Application
+	{
+	attribute MainMenu, InterviewList.
+
+	// public methods:
+	class method new.
+	method run.
+
+	// private methods:
+	method init.
+	method PrintTitle.
+	method InitializeMenu.
+	method DisplayInterviews.
+	method NewInterview.
+	method WriteToDisk.
+	method ReadFromDisk.
+	method PressEnter
+	}
+
+
+method Application::PressEnter
+	{
+	consoleOut << "\npress ENTER...".
+	consoleIn >> String new 
+	}
+
+
+method Application::DisplayInterviews
+	{
+	consoleOut << "\n\nDISPLAY INTERVIEWS\n\n".
+
+	(InterviewList numElements equal: 0) ifTrue:
+		[ consoleOut << "<no interviews in list>" ].
+
+	object NumShown.
+	bind NumShown to 0.
+	InterviewList do:
+		[:i_view|
+		consoleOut << i_view << '\n'.
+		bind NumShown to NumShown+1.
+		(NumShown equal: 5) ifTrue: 
+			[ 
+			self PressEnter. 
+			bind NumShown to 0
+			]
+		].
+
+	consoleOut << "\nEnd of list.".
+	self PressEnter
+	}
+
+
+method Application::NewInterview
+	{
+	consoleOut << "\n\nNEW INTERVIEW\n\n".
+
+	object date, name, results.
+	bind date to Date new.
+	bind name to String new.
+	bind results to String new.
+
+	consoleOut << "Date: (mm/dd/yy) ".
+	consoleIn >> date.
+	consoleOut << "Company name: ".
+	consoleIn >> name.
+	consoleOut << "Results of interview: ".
+	consoleIn >> results.
+
+	object i_view.
+	bind i_view to Interview new.
+	i_view setDate: date name: name results: results.
+
+	InterviewList append: i_view
+	}
+
+
+method Application::WriteToDisk
+	{
+	consoleOut << "\n\nWRITE TO DISK\n\n".
+
+	object db.
+	bind db to ofstream new open: "iview.db".
+
+	InterviewList do: [:i_view | db << i_view ].	
+
+	db close.
+
+	consoleOut << "The database was written to disk.\n"
+	}
+
+
+method Application::ReadFromDisk
+	{
+	object db.
+	bind db to ifstream new open: "iview.db".
+	db bad ifTrue: 
+		[ 
+		consoleOut << "\nNo database found\n".
+		^self
+		].
+
+	[ db eof ] whileFalse:
+		[
+		object i_view.
+		bind i_view to Interview new.
+		i_view readFrom: db.
+		db eof ifFalse:
+			[ InterviewList append: i_view ]
+		]
+	}
+
+
+method Application::PrintTitle
+	{
+	consoleOut << "\n          " <<
+	    "I N T E R V I E W   M A N A G E M E N T   S Y S T E M"
+	    << "\n\n"
+	}
+
+
+
+method Application::new
+	{
+	^super new init
+	}
+
+
+method Application::init
+	{
+	bind InterviewList to LinkedList new.
+	self InitializeMenu
+	}
+
+
+
+method Application::run
+	{
+	self ReadFromDisk.
+
+	// Display title:
+	self PrintTitle.
+	
+	// Main processing loop:
+	[ true ] whileTrue:
+		[
+		consoleOut << "\n\n------------------------------" 
+			<< "\n\n      MAIN MENU\n\n".
+
+		object opt.
+		bind opt to MainMenu ReadOption.
+
+		(opt equal: 4) ifTrue: [ ^self ].
+
+		// ### I wish there was a "switch" construct...
+		(opt equal: 1) ifTrue: [ self DisplayInterviews ]
+		else: 
+		    [
+		    (opt equal: 2) ifTrue: [ self NewInterview ]
+		    else:
+			[
+			(opt equal: 3) ifTrue: [ self WriteToDisk ]
+			]
+		    ]
+		]
+	}
+
+
+
+method Application::InitializeMenu
+	{
+	bind MainMenu to Menu new init.
+
+	MainMenu AddOption: "Display interviews".
+	MainMenu AddOption: "New interview".
+	MainMenu AddOption: "Write to disk".
+	MainMenu AddOption: "Exit program"
+	}
+
+
+// ********************************************
+//		     main
+// ********************************************
+main
+	{
+	Application new run
+	}
+
+
+

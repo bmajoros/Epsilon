@@ -1,0 +1,40 @@
+<h1>Block</h1>
+
+<br><b>Derived from:</b>Block
+<p><b>Description:</b>
+<br>A Block instance represents a block construct in an Epsilon
+program.  A block construct appears in a program as a pair of
+brackets containing a list of statements and 0 to 3 parameters.
+
+<p>When flow-of-control reaches a block construct in an Epsilon
+program, the entire construct evaluates to a Block instance,
+but the statements inside the block are not executed at this
+time.  To execute the statements inside a block, you must send
+the Block instance representing that block construct an
+<i>evaluate</i> message.
+
+<p>There are four such <i>evaluate</i> messages, as shown in the
+list of methods, below.  Each <i>evaluate</i> message handles blocks
+with a different number of parameters.  It is an error to pass
+more parameters to a block than it can handle.  Passing too few
+simply results in the rightmost parameters being bound to
+<a href="nil.html">nil</a>.
+
+<p>While-statements and until-statements are emulated by sending
+<a href="blkwhilt.html">whileTrue:</a>,
+<a href="blkwhilf.html">whileFalse:</a>,
+or <a href="blkuntil.html">until:</a> messages to blocks.
+
+<p>The Block class cannot be explicitly instantiated nor subclassed,
+because it is a restricted class.
+
+<p><b>Methods:</b>
+<br>	<a href="blkeval.html">evaluate</a>
+<br>	<a href="blkevalp.html">evaluateOn:</a>
+<br>	<a href="blkevalp.html">evaluateOn:and:</a>
+<br>	<a href="blkevalp.html">evaluateOn:and:and:</a>
+<br>	<a href="blkwhilt.html">whileTrue:</a>
+<br>	<a href="blkwhilf.html">whileFalse:</a>
+<br>	<a href="blkuntil.html">until:</a>
+	
+

@@ -1,0 +1,135 @@
+
+// hash.eps : hash tables
+
+include "\\bc\\projec~2\\epsilon\\src\\list.eps"
+
+
+
+// ******************************************
+//              class HashTable
+// ******************************************
+
+// This is a hash table, which is implemented as an array of
+// LinkedLists.  Any object of any type can be stored.  You
+// must specify a table size when instantiating HashTable; 
+// it is best to use a prime number, for performance reasons
+// (this is a mathematical property of hash tables in general).
+
+class HashTable : Root
+	{
+	attribute table, size. // array of LinkedList
+	class method newSize: n.
+	class method new. // don't use this
+	method setSize: n. // constructor only (does not resize)
+	method add: elem.
+	method do: aBlock.
+	method displayOn: aStream.
+	method find: elem.
+	method isElement: elem.
+	method remove: elem.
+	method numElements.
+	method purge
+	}
+
+
+
+// ******************************************
+//              HashTable methods
+// ******************************************
+
+method HashTable::displayOn: aStream
+	{
+	aStream << "HashTable[ ".
+	self do: [:e | aStream << e << ' ' ].
+	^aStream << ']'
+	}
+
+
+
+method HashTable::newSize: n
+	{
+	^super new setSize: n
+	}
+
+
+
+method HashTable::new
+	{
+	self error: "Use HashTable::newSize:"
+	}
+
+
+
+method HashTable::numElements
+	{
+	object num.
+	bind num to 0.
+
+	0 upTo: size-1 do:
+		[:i|
+		bind num to num + (table at: i) numElements
+		].
+
+	^num
+	}
+
+
+
+method HashTable::purge
+	{
+	0 upTo: size-1 do:
+		[:i | (table at: i) purge ]
+	}
+
+
+
+method HashTable::remove: elem
+	{
+	(table at: elem hashValue % size) delete: elem
+	}
+
+
+
+method HashTable::setSize: n
+	{
+	// This is a constructor; do not call after construction;
+	// it does not resize the hash table (any elements in
+	// the table will be lost)
+
+	bind size to n.
+	bind table to Array new.
+	table setSize: n.
+	0 upTo: n-1 do:
+		[:i | table at: i put: LinkedList new ]
+	}
+
+
+
+method HashTable::add: elem
+	{
+	(table at: elem hashValue % size) insert: elem
+	}
+
+
+
+method HashTable::do: aBlock
+	{
+	0 upTo: size-1 do:
+		[:i| (table at: i) do: aBlock ]
+	}
+
+
+
+method HashTable::find: elem
+	{
+	^(table at: elem hashValue % size) find: elem
+	}
+
+
+
+method HashTable::isElement: elem
+	{
+	^(self find: elem) isNil not
+	}
+
+

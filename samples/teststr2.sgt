@@ -1,0 +1,14 @@
+
+// teststr2.eps : more string-testing
+
+
+main
+	{
+	consoleOut << ("123" asInt + "321" asInt) << '\n'.
+
+	consoleOut << ("3.14" asFloat + 1.0) << '\n'.
+
+	consoleOut << ">>>" << ("Bobcats" begin: 3 end: 5) <<
+		"<<<"  << '\n'
+	}
+

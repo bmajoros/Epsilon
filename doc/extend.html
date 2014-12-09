@@ -1,0 +1,460 @@
+<h1>Using Epsilon as a Component</h1>
+
+<p>
+<h2>Introduction</h2>
+
+<p>
+Epsilon is a simple dialect of Smalltalk.  An interpreter for
+Epsilon has been implemented in C++ for Solaris, including
+a modest class library of simple data structures and 
+<a href="classes.html">built-in classes</a>.
+
+<p>
+The Epsilon interpreter can be used as a reusable component
+in your C++ applications.  This allows you to design your
+applications to be highly configurable, because users can
+then write their own customization scripts in Epsilon that
+your application can load and pass to the Epsilon interpreter.
+
+<p>
+The easiest way to learn how to incorporate the interpreter
+in your application is to look at the source file 
+<a href="epsilonC.html">epsilon.C</a>,
+which is quite short, and well documented.  This page further
+explains each part of that source file.  First, we begin with
+a suggested architecture for applications that use an 
+embedded interpreter component.
+
+
+
+<h2>Communication between Interpreter and Application</h2>
+
+<p>
+Applications that are to be programmable, or at least highly 
+configurable, may be conceptualized as consisting of two
+layers, the 'hard' layer, which is not programmable, and
+the 'soft' layer, which is.
+
+<p>
+The soft layer is built on top of the hard layer.  The hard
+layer provides a foundation for your application.  It contains
+code objects that are expected to remain virtually unchanged
+throughout the lifetime of the application, even as the code
+evolves through future versions.
+
+<p>
+The soft layer is more dynamic, and can be modified, or
+possibly even entirely replaced, by the user as the user
+configures or customizes the system.  There are several ways
+of achieving this.
+
+<p>
+The first way is to write the hard layer in C++ and the soft
+layer in Epsilon.  This Epsilon source would be shipped with
+your application and loaded at run-time by the hard layer.
+By editing the Epsilon source code, the user can modify the
+behavior of the soft layer.  However, since Epsilon is an
+interpreted language, this may run too slowly in many cases.
+
+<p>
+Furthermore, requiring users to modify existing code may be
+too demanding (and error-prone).
+
+<p>
+The other option is to write both layers in C++, but to 
+provide surrogate Epsilon classes for each C++ class in 
+the soft layer.  This way, the user's Epsilon code can
+interface directly with the soft layer and modify its
+behavior by sending messages to soft layer (C++) objects
+through their Epsilon surrogates.
+
+<p>
+An elegant way of doing this is through subclassing.  If
+users are provided with a set of soft layer surrogate
+classes that they can subclass, then they will be thereby
+empowered to modify soft layer behavior by overriding
+(virtual) methods of classes in the soft layer.  You will
+effectively have provided them with an application
+framework into which they can insert their callback
+functions.
+
+<p>
+For example:
+
+<p>
+<pre>
+class MyEditor : Editor
+{
+   method onTab
+}
+
+method MyEditor::onTab
+{
+   self moveCursorX: (self cursorX + 3) Y: 0
+}
+
+main
+{
+   app registerEditor: MyEditor new
+}
+</pre>
+
+<p>
+Whenever the TAB key is pressed, the application would
+call the onTab method of the user's MyEditor class,
+which could contain virtually anything the user desires.
+In this case, it simply moves the cursor 3 spaces to the
+right, but one can easily envision more complex (and
+interesting) behavior, such as context-sensitive tabbing
+based on the alignment of text on surrounding lines.
+
+<p>
+In this way, you can provide a programmatic interface to
+your application which your 'power-users' can use to
+highly configure or customize the application.  For users
+who do not need this much power, you can provide default code,
+either in the interpreted language, or in C++.
+
+<p>
+The rest of this page describes in detail how to 
+incorporate the reusable Epsilon interpreter component
+into your application, and will hopefully make it clear 
+that doing so need not entail the writing of
+any more than a few hundred extra lines of code.
+
+<p>
+Given that you get the scanner, parser, code-generator,
+and garbage-collector for free, a few hundred lines of
+code is a very small price to pay for a complete interpreter.
+
+
+<p>
+<h2>Details</h2>
+
+<p>
+<h3>Top Level</h3>
+The main routine has the following form:
+
+<p>
+<pre>
+void main(int argc,char *argv[])
+{
+  try
+    {
+      ...
+
+      // Try to execute the source file
+      go(Buffer);
+    }
+  catch(const LEXICAL_ERROR &amp;le)
+    {
+      cout &lt;&lt; "Lexical error on line " &lt;&lt; le.GetEpsilonLineNum() &lt;&lt;
+	" in file \"" &lt;&lt; "\"" &lt;&lt; endl;
+    }
+  catch(const READ_ERROR &amp;)
+    {
+      cout &lt;&lt; "Read error" &lt;&lt; endl;
+    }
+  ...
+}
+</pre>
+
+<p>
+main() consists of an exception handler that catches
+exceptions for syntax errors and other types of errors
+in the user's code.
+
+<p>
+<h3>The go() Routine</h3>
+
+<p>
+The go() routine is as follows:
+
+<p>
+<pre>
+void go(const StringObject &amp;filename)
+{
+  EpsilonInterpreter interpreter;
+
+  registerBuiltInClasses(interpreter);
+  registerBuiltInObjects(interpreter);
+
+  ifstream is(filename.AsCharArray());
+  if(!is.good())
+    throw FILE_EXCEPTION(__FILE__,__LINE__);
+
+  interpreter.parseCode(is);
+
+  if(!interpreter.doesMainExist())
+    {
+      cout &lt;&lt; "You have not defined main()!" &lt;&lt; endl;
+      return;
+    }
+
+  interpreter.executeMain();
+}
+</pre>
+
+<p>
+This routine begins by allocating an object of type
+EpsilonInterpreter.  It then registers built-in 
+classes and objects with the interpreter (explained
+below).
+
+<p>
+go() then opens an istream for the source file and
+passes that istream to the parseCode() method.  This
+causes the interpreter to parse your user's code
+and to store the generated code inside the interpreter.
+
+<p>
+Before executing the user's code, you should make sure
+the user has provided a main routine; this can be 
+accomplished via the doesMainExist() method.
+
+<p>
+Finally, you can execute the user's main() routine 
+via executeMain().  main() allows the user to register
+callback objects with the application, so you will 
+typically only want to do this once, just after loading
+the user's source code.  Once the user has registered
+his/her callback objects, you can send messages directly 
+to  those objects at any time during application
+execution.  Thus, it is only necessary to call the user's
+main() routine once, in order to bootstrap his/her code.
+
+
+<p>
+<h3>Registering Built-In Classes</h3>
+
+<p>
+The registerBuiltInClasses function in epsilon.C contains
+only comments that describe how to write your own version
+of this function:
+
+<p>
+<pre>
+void registerBuiltInClasses(EpsilonInterpreter &amp;interpreter)
+{
+  // 1. Create &amp; register your classes using 
+  //       Class *c=interpreter.createClass("&lt;name&gt;");
+  //       (automatically registered)
+  //    or
+  //       Class *c=new DerivedFromClass(...);
+  //       (not automatically registered; you must do it)
+  //       interpreter.registerClass(c);
+
+  // 2. Add instance methods &amp; class methods to your class:
+  //       interpreter.addInstanceMethod(c,"&lt;methodName&gt;",
+  //          &amp;cPlusPlusFunction);
+  //    or
+  //       interpreter.addInstanceMethod(c,"&lt;methodName&gt;",
+  //          "&lt;epsilon source code&gt;");
+}
+</pre>
+
+<p>
+An example registerBuiltInClasses() function containing actual
+code is as follows:
+
+<p>
+<pre>
+Class * thingamajig;
+Object *hickup(RunTimeEnvironment &amp;env);
+
+void registerBuiltInClasses(EpsilonInterpreter &amp;interpreter)
+{
+  // Create a class called 'thingamajig'
+  thingamajig=interpreter.createClass("thingamajig");
+  interpreter.addInstanceMethod(thingamajig,"print:",
+    "method thingamajig::print: p { cout &lt;&lt; '[' &lt;&lt; p &lt;&lt; ']' }");
+  interpreter.addInstanceMethod(thingamajig,"hickup",&amp;hickup);
+
+  // ----------------------------------------------------------
+
+  // Create a class called 'thingamadoober'
+  thingamadoober=new thingamadooberClass();
+  interpreter.registerClass(thingamadoober);
+  interpreter.addInstanceMethod(thingamadoober,"init:",
+			&amp;thingamadooberObject::init);
+  interpreter.addInstanceMethod(thingamadoober,"hasMoreTokens",
+			&amp;thingamadooberObject::hasMoreTokens);
+  interpreter.addInstanceMethod(thingamadoober,"nextToken",
+			&amp;thingamadooberObject::nextToken);
+}
+</pre>
+
+<p>
+This registerBuiltInClasses() function registers two classes,
+thingamajig and thingamadoober.  Notice that thingamajig has
+two instance methods, print: and hickup.  The former is defined
+in the Epsilon language by providing a string literal containing
+the actual Epsilon code defining the body.
+
+<p>
+The hickup instance method is defined using a C++ function:
+
+<p>
+<pre>
+Object *hickup(RunTimeEnvironment &amp;env)
+{
+  // Get self
+  thingamajig *self=(thingamajig*) env.GetSelf();
+
+  // Get parameter(s)
+  // &lt;none&gt;
+
+  // Perform operation
+  cout &lt;&lt; "hickup!" &lt;&lt; endl;
+
+  // return result
+  return self;
+}
+</pre>
+
+<p>
+You may use C++ methods rather than functions for this purpose,
+but if you use methods, they must be static.  
+
+<p>
+hickup() begins by retrieving the 'self' pointer from the
+run-time-stack.  This was not necessary in this example, but
+it usually is, because you often need to know to which object
+the message is being sent; 'self' is the recipient of the 
+message implemented by this method (hickup).
+
+<p>
+hickup() did not require any parameters, but if it did,
+they could be retrieved as follows:
+
+<p>
+<pre>
+   String_Object *parm1=
+      DYNAMIC_CAST_PTR(String_Object,env.GetParameter(1));
+   if(parm1==NULL)
+      throw RUN_TIME_ERROR(__FILE__,__LINE__,
+         "Method hickup requires a string parameter!");
+</pre>
+
+<p>
+The DYNAMIC_CAST_PTR macro can be replaced by dynamic_cast&lt;&gt;()
+if your compiler supports RTTI directly.
+
+<p>
+You must verify that the dynamic cast succeeded, because
+the user could have passed the wrong type of object, since
+Epsilon (like smalltalk) is an untyped language (i.e., static
+type checking is not possible).
+
+<p>
+After performing the operation, your method should return
+an Object result; if your method produces no useful result,
+you should follow the convention of returning 'self.'
+
+<p>
+<h3>Registering Built-In Objects</h3>
+
+<p>
+Now consider the registerBuiltInObjects() function:
+
+<p>
+<pre>
+void registerBuiltInObjects(EpsilonInterpreter &amp;interpreter)
+{
+  // Declare your global objects here using
+  //    int lexAddr=interpreter.declareGlobalObject("&lt;name&gt;");
+
+  // Allow the interpreter to allocate space at the bottom of
+  // the run-time-stack for all global objects
+  interpreter.allocateGlobalSpace();
+
+  // Store your global objects on the stack using
+  //     interpreter.storeGlobalObject(&lt;object-ptr&gt;,lexAddr);
+}
+</pre>
+
+<p>
+You must follow the pattern of (1) declaring your objects,
+(2) allocating global space, and (3) storing your objects
+on the stack.  Performing these steps in the wrong order
+would be very bad.
+
+<p>
+Here is an example registerBuiltInObjects() function:
+
+<p>
+<pre>
+void registerBuiltInObjects(EpsilonInterpreter &amp;interpreter)
+{
+  int lexAddr=interpreter.declareGlobalObject("hoojabob");
+
+  interpreter.allocateGlobalSpace();
+
+  thingamadooberObject *hoojabob=
+    new thingamadooberObject(thingamadoober,0);
+  interpreter.storeGlobalObject(hoojabob,lexAddr);
+}
+</pre>
+
+<p>
+This function declares an object called "hoojabob."  Then
+the interpreter is asked to allocated global space for
+all global objects.  If you had other global objects to 
+declare, you would have declared them before calling
+allocateGlobalSpace().
+
+<p>
+Finally, this function allocates the hoojabob object and
+stores it on the stack using storeGlobalObject().  The
+integer variable, lexAddr, is simply a lexical address
+that the interpreter uses as a handle to the object.  The
+lexical address returned by the declareGlobalObject()
+method must be passed to the storeGlobalObject() method.
+Each global object will have a unique lexical address.
+
+
+
+<h2>The epscomp.a Library</h2>
+
+<p>To use the Epsilon component, your makefile will need
+to be modified so that you link in the epscomp.a library.
+
+
+
+<h2>Summary</h2>
+
+<p>
+It is hoped that the reader has by now realized that an
+appropriately packaged interpreter component for any
+interpreted language can be incorporated into an application
+with very little effort.  The power of providing a
+programmatic interface to an application for the purpose
+of configuration or customization is obvious.
+
+<p>
+I have presented here a description of the Epsilon interpreter
+component, but the approach taken to package the interpreter
+as a reusable component could also be applied to other
+interpreted languages.  
+
+<p>
+Given the popularity of C++ and
+Java, it would be nice to have a Java-based interpreter
+component to use instead of Epsilon, since Smalltalk is
+less well-known by programmers and other users likely
+to take advantage of a programmatic interface to an
+application.  
+
+<p>
+Visual BASIC is another promising possibility, because of its
+simplicity and popularity,
+as has already been shown by the VB interfaces to Microsoft
+Excel and Access.
+
+
+<hr>
+<i>
+Bill Majoros, TTL/NLP
+<br>
+<a href="mailto:wmajoros@thomtech.com">wmajoros@thomtech.com</a>
+</i>

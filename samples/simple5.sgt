@@ -1,0 +1,36 @@
+
+// simple5.eps
+
+class Alpha
+	{
+	method f;
+	method g: b for: n;
+	}
+
+method Alpha::g: b for: n
+	{
+	(n equal: 0) ifTrue:
+		[ b evaluate; ]
+	else:
+		[
+		bind n to n minus: 1;
+		self g: b for: n;
+		];
+	"This should not get displayed" displayOn: consoleOut;
+	}
+
+method Alpha::f
+	{
+	object eight;
+	bind eight to 8;
+	self g: [ return eight; ] for: 3;
+	}
+
+main
+	{
+	object alpha, x;
+
+	bind alpha to new Alpha;
+	bind x to alpha f;
+	x displayOn: consoleOut;
+	}

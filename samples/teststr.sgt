@@ -1,0 +1,40 @@
+
+// teststr.eps : for testing string methods
+
+
+main
+	{
+	object s1, s2.
+
+	bind s1 to "Apple".
+	bind s2 to "Bananna".
+
+	s1 < s2 ifTrue: [ consoleOut << "less\n" ].
+	s1 > s2 ifTrue: [ consoleOut << "greater\n" ].
+	(s1 equal: s2) ifTrue: [ consoleOut << "equal\n" ].
+	(s1 equal: s1) ifTrue:
+		[ consoleOut << "s1 is equal to itself" ]
+	else:	[ consoleOut << "Error!!!" ].
+
+	consoleOut << s1 << " has " << s1 length << " elements" << '\n'.
+
+	object cout.
+	bind cout to consoleOut.
+
+	consoleOut << "\nThe 4th element of Apple is '"
+		<< (s1 at: 3) << ''' << '\n'.
+
+	cout << (s1 + 's' asString) << '\n' <<
+		s1 << '\n'.
+
+	'a' < 'b' ifTrue:
+		[ cout << "a < b\n" ].
+	('a' equal: 'b') ifTrue:
+		[ cout << "a == b\n" ].
+	'a' > 'b' ifTrue:
+		[ cout << "a > b" ].
+	('a' equal: 'a') ifTrue:
+		[ cout << "a == a\n" ]
+	}
+
+

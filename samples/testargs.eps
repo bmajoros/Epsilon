@@ -1,0 +1,15 @@
+
+
+main
+{
+	object numArgs.
+	bind numArgs to args getSize.
+	0 upTo: numArgs-1 do:
+		[ :i |
+		cout << "arg #" << i << "=\"" << (args at: i) 
+			<< "\"" << endl
+		]
+}
+
+
+

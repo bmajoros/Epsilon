@@ -1,0 +1,86 @@
+
+// Elastic.st : Expandable array class
+
+
+// An ElasticArray is an array which automatically expands when its
+// array bounds are exceeded during a "get" or "put" operation.
+// Because it is a subclass of Array, you can use Array::setSize 
+// to initialize its size to a reasonable starting size for your
+// particular application.  Resizing operations are not particularly
+// fast, because the old array contents are copied into a new array.
+// You can specify an increment to use when resizing so that rather
+// than simply resizing to a size that will satisfy the "get" or "put,"
+// it resizes to the newly desired size PLUS some increment; this
+// makes the resizing operation occur less frequently, thus improving
+// performance.
+
+class ElasticArray : Array
+	{
+	attribute increment.
+	class method InitialSize: is Increment: inc.
+	class method new.
+	method at: i. // query the element at location i
+	method at: i put: e. // store element e at location i
+	method setIncrement: i
+	}
+
+
+method ElasticArray::setIncrement: i
+	{
+	// When the array must resize itself to handle an out-
+	// of-range index, it resizes to a size equal to the
+	// index plus the "increment" value; this way, it doesn't
+	// have to resize every time something is appended to the
+	// array, which would be very slow.
+
+	bind increment to i
+	}
+
+
+
+method ElasticArray::InitialSize: is Increment: inc
+	{
+	^(super new setSize: is) setIncrement: inc
+	}
+
+
+method ElasticArray::new
+	{
+	^self InitialSize: 10 Increment: 10
+	}
+
+
+// Method at: retreives the element from the given index.  If the
+// index is too great, the array expands so that it is large enough,
+// and the returned object would then be nil.
+method ElasticArray::at: i
+	{
+	// If the array is not big enough, then expand it
+	// before retrieving the element:
+	i >= self getSize ifTrue:
+		[ self setSize: i + increment ].
+
+	// Retrieve the element:
+	^super at: i
+	}
+
+
+
+// Method at:put: stores the given object at the specified index.
+// If the index is too great, the array will expand (without losing
+// its previous contents) and then store the element.  The object
+// thus stored is also the return value of the method.
+method ElasticArray::at: i put: e
+	{
+	// If the array is not big enough, then expand it
+	// before storing the element:
+	i >= self getSize ifTrue:
+		[ self setSize: i + increment ].
+
+	// Store the element:
+	super at: i put: e.
+
+	// Return the element stored:
+	^e
+	}
+

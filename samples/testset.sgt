@@ -1,0 +1,21 @@
+
+// testset.eps
+
+include "\\bc\\projec~2\\epsilon\\src\\set.eps"
+
+
+main
+	{
+	object one_to_five, four_to_eight.
+	bind one_to_five to Set new.
+	bind four_to_eight to Set new.
+
+	1 upTo: 5 do: [:i|one_to_five add: i].
+	4 upTo: 8 do: [:i|four_to_eight add: i].
+
+	consoleOut << one_to_five << '\n' <<
+		four_to_eight << '\n' <<
+		(one_to_five + four_to_eight) << '\n' <<
+		(one_to_five * four_to_eight) << '\n' <<
+		(one_to_five - four_to_eight) << '\n'
+	}

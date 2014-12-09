@@ -1,0 +1,15 @@
+
+
+main
+{
+	object tokenizer.
+	bind tokenizer to
+		StringTokenizer new initSource: 
+			"Four score and seven years ago".
+	[tokenizer hasMoreTokens] whileTrue:
+		[
+		object token.
+		bind token to tokenizer nextToken.
+		cout << token << endl
+		]
+}

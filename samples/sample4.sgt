@@ -1,0 +1,10 @@
+
+// sample4.eps
+
+main
+	{
+	object ary.
+	bind ary to Root subClasses.
+	ary do: [:c | cout << c name << ' ' << c isNil << '\n' ]
+	}
+

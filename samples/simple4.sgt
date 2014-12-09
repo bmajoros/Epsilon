@@ -1,0 +1,98 @@
+
+// simple4.eps
+// This program was successfully executed on 12/20/95
+
+class LinkNode : Root
+	{
+	attribute next;
+	method getNext;
+	method setNext: n;
+	}
+
+method LinkNode::getNext
+	{
+	return next;
+	}
+
+method LinkNode::setNext: n
+	{
+	bind next to n;
+	}
+
+class IntNode : LinkNode
+	{
+	attribute Value;
+	method setValue: v;
+	method getValue;
+	method displayOn: aStream;
+	}
+
+method IntNode::displayOn: aStream
+	{
+	"IntNode with value " displayOn: aStream;
+	Value displayOn: aStream;
+	aStream nl;
+    }
+
+method IntNode::setValue: v
+	{
+	bind Value to v;
+    return self;
+	}
+
+method IntNode::getValue
+	{
+	return Value;
+	}
+
+class LinkedList
+	{
+	attribute first;
+	method Insert: n;
+	method getFirst;
+	method do: aBlock;
+	}
+
+method LinkedList::Insert: n
+	{
+	n setNext: first;
+	bind first to n;
+	}
+
+method LinkedList::getFirst
+	{
+	return first;
+	}
+
+method LinkedList::do: aBlock
+	{
+	object n;
+	bind n to first;
+	[n isNil; ] whileFalse:
+		[
+		aBlock evaluateOn: n;
+		bind n to n getNext;
+		];
+	}
+
+main
+	{
+	object list, node;
+
+	bind list to new LinkedList;
+
+	bind node to new IntNode setValue: 6;
+	list Insert: node;
+
+	bind node to new IntNode setValue: 7;
+	list Insert: node;
+
+	bind node to new IntNode setValue: 8;
+	list Insert: node;
+
+	list do:
+		[ :n |
+		n displayOn: consoleOut;
+		];
+	}
+

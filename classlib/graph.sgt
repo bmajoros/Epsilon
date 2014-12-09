@@ -1,0 +1,291 @@
+// ==============================================================
+// graph.eps : An implementation of graphs (as in "graph theory")
+//
+// 1/12/96 Bill Majoros
+// ==============================================================
+
+include "\\bc\\projec~2\\epsilon\\src\\pair.eps"
+include "\\bc\\projec~2\\epsilon\\src\\set.eps"
+include "\\bc\\projec~2\\epsilon\\src\\stack.eps"
+
+
+
+// ******************************************
+//            		class Graph
+// ******************************************
+
+// A graph is a pair, (V,E), where V is a nonempty
+// set of objects called "vertices" and E is a
+// symmetric, irreflexive relation on V.  This is
+// synonamous with "undirected graph."  class Graph
+// represents such a graph.  The objects used as
+// vertices must respond to the "equal:" and "hashValue"
+// messages.
+
+class Graph
+	{
+	attribute Vertices, Edges.
+
+	// public methods:
+	class method new.
+	method addEdge: anEdge.
+	method addEdgeFrom: v1 To: v2.
+	method removeEdge: anEdge.
+	method isEdgeFrom: v1 To: v2.
+	method addVertex: anInt.
+	method isVertex: v.
+	method removeVertex: v.
+	method displayOn: aStream.
+	method is: v1 reachableFrom: v2.
+	method reachableFrom: v.
+	method edgesIncidentOn: v.
+	method neighborsOf: v.
+	method isConnected.
+
+	// private methods:
+	method getAnyVertex.
+	method init
+	}
+
+
+
+// ******************************************
+//            		class Edge
+// ******************************************
+
+class Edge : Pair
+	{
+	method hashValue.
+	method equal: anEdge.
+	method displayOn: aStream.
+	method isIncidentOn: aVertex
+	}
+
+
+
+// ******************************************
+//            	Graph methods
+// ******************************************
+method Graph::new
+	{
+	^super new init
+	}
+
+
+
+method Graph::init
+	{
+	bind Edges to Set new.
+	bind Vertices to Set new
+	}
+
+
+
+method Graph::addEdge: anEdge
+	{
+	Edges add: anEdge
+	}
+
+
+
+method Graph::addVertex: v
+	{
+	Vertices add: v
+	}
+
+
+
+method Graph::displayOn: aStream
+	{
+	aStream << "Graph with vertices=" << Vertices
+		<< ", edges=" << Edges
+	}
+
+
+
+method Graph::addEdgeFrom: v1 To: v2
+	{
+	self addEdge: (Edge newKey: v1 value: v2)
+	}
+
+
+
+method Graph::removeEdge: anEdge
+	{
+	Edges remove: anEdge
+	}
+
+
+method Graph::removeVertex: v
+	{
+	Vertices remove: v
+	}
+
+
+method Graph::isEdgeFrom: v1 To: v2
+	{
+	^Edges isElement: (Edge newKey: v1 value: v2)
+	}
+
+
+
+method Graph::isVertex: v
+	{
+	^Vertices isElement: v
+	}
+
+
+
+method Graph::is: v1 reachableFrom: v2
+	{
+	// This is pretty inefficient, but it's nice and small
+
+	^(self reachableFrom: v1) isElement: v2
+	}
+
+
+
+
+method Graph::edgesIncidentOn: v
+	{
+	object RetVal.
+	bind RetVal to Set new.
+
+	Edges do:
+		[:e |
+		(e isIncidentOn: v) ifTrue:
+			[ RetVal addUnconditionally: e ]
+		].
+
+	^RetVal
+	}
+
+
+
+
+method Graph::neighborsOf: v
+	{
+	object neighbors.
+	bind neighbors to Set new.
+
+	(self edgesIncidentOn: v) do:
+		[:e |
+		(e key equal: v) ifTrue: [ neighbors addUnconditionally: e value ]
+		else: [ neighbors addUnconditionally: e key ]
+		].
+
+	^neighbors
+	}
+
+
+
+
+method Graph::reachableFrom: v
+	{
+	// This method computes the set of all nodes reachable from
+	// v, _not_ including v itself.
+
+	object reachable.
+	bind reachable to Set new.
+
+	// The idea is to find the neighbors of v, and then to find
+	// their neighbors, and their neighbors, etc...; we just have
+	// to be careful not to enter an infinite loop; it is sufficient
+	// to avoid considering the same node twice.  We use a stack to
+	// remember the neighbors that we wish to visit at some future
+	// time.  As soon as a neighbor is visited, we "mark" it by putting
+	// it in a set of marked nodes.  A neighbor that is already marked
+	// is not pushed onto the stack.
+
+	object MarkedSet, NeighborStack.
+	bind MarkedSet to Set new.
+	bind NeighborStack to Stack new.
+
+	MarkedSet addUnconditionally: v.
+	NeighborStack push: v.
+
+	[NeighborStack isEmpty] whileFalse:
+		[
+		object ThisNode.
+		bind ThisNode to NeighborStack pop.
+
+		object neighbors.
+		bind neighbors to self neighborsOf: ThisNode.
+
+		neighbors do:
+			[:n |
+			(MarkedSet isElement: n) ifFalse:
+				[ 
+				MarkedSet addUnconditionally: n.
+				NeighborStack push: n.
+				reachable addUnconditionally: n
+				]
+			]
+		].
+
+	^reachable	
+	}
+
+
+
+method Graph::isConnected
+	{
+	Vertices isEmpty ifTrue: [^false].
+
+	object nodes, anyNode.
+	bind anyNode to self getAnyVertex.
+	
+	bind nodes to self reachableFrom: anyNode.
+	nodes addUnconditionally: anyNode.
+
+	^nodes numElements equal: Vertices numElements
+	}
+
+
+
+method Graph::getAnyVertex
+	{
+	Vertices do: [:v | ^v ]
+	}
+
+
+
+
+// ******************************************
+//            	Edge methods
+// ******************************************
+
+method Edge::hashValue
+	{
+	^self key hashValue + self value hashValue
+	}
+
+
+
+method Edge::equal: anEdge
+	{
+	// Since we are implementing an unordered graph, two edges are
+	// considered equal if their elements are equal, even if their
+	// positions are swapped.  Thus, (A,B) equals (A,B), and it is
+	// also true that (A,B) equals (B,A).
+
+	^(super equal: anEdge) ||
+		((self key equal: anEdge value) && (self value equal: anEdge key))
+	}
+
+
+
+method Edge::displayOn: aStream
+	{
+	aStream << '(' << self key << ',' << self value << ')'
+	}
+
+
+
+method Edge::isIncidentOn: aVertex
+	{
+	^(Key equal: aVertex) || (Value equal: aVertex)
+	}
+
+
+

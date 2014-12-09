@@ -1,0 +1,25 @@
+<h1>Nil</h1>
+
+<br><b>Derived from:</b>Root
+<p><b>Description:</b>
+<br>Nil is the class of the built-in object <i>nil</i>.  Nil is
+restricted, so it cannot be instantiated explicitly; nor can it be
+subclassed.  
+
+<p>nil is used much the same as NULL in C++, but it has
+a different meaning.  NULL in C++ is a pointer that does not
+point to any object, but nil actually denotes an object
+(an instance of the class Nil).
+
+<p>Rather than testing whether an identifier currently
+refers to an object (as you might do in C++ by comparing a pointer
+to NULL), we send the denoted object the isNil message, which
+returns true for instances of Nil and false for instances of Root
+and subclasses which do not override the isNil method.
+
+<p><b>Methods:</b>
+<br>	<a href="nilisnil.html">isNil</a>
+<br>	<a href="nildsply.html">displayOn:</a>
+<br>	<a href="nilhash.html">hashValue</a>
+	
+

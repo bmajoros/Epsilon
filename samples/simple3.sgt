@@ -1,0 +1,37 @@
+
+// simple3.eps
+
+main
+	{
+	true ifTrue: [ "true is true\n" displayOn: consoleOut; ];
+	false ifTrue: [ "false is true\n" displayOn: consoleOut; ];
+
+	(6 lessThan: 7) ifTrue:
+		[ "6 is less than 7\n" displayOn: consoleOut; ];
+	(7 lessThan: 6) ifTrue:
+		[ "7 is less than 6\n" displayOn: consoleOut; ];
+
+	2 upTo: 5 do: [ :i | i displayOn: consoleOut; consoleOut nl; ];
+	5 downTo: 2 do: [ :i | i displayOn: consoleOut; consoleOut nl; ];
+
+	[ 6; ] evaluate displayOn: consoleOut;
+
+	consoleOut nl;
+
+	object x;
+	bind x to 4;
+	[ x lessThan: 10; ] whileTrue:
+		[
+		"\nx is " displayOn: consoleOut;
+		x displayOn: consoleOut;
+        bind x to x plus: 1;
+		];
+
+	(6 lessThan: 7) displayOn: consoleOut;
+	(7 lessThan: 6) displayOn: consoleOut;
+
+	256.256 displayOn: consoleOut;
+	256.256 asInt displayOn: consoleOut;
+
+    ("\nHello, " plus: "world!\n") displayOn: consoleOut;
+	}
